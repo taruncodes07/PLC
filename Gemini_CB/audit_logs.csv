@@ -1,0 +1,4 @@
+user,timestamp,row_id,column_name,old_value,new_value
+admin,2025-12-14 15:51:14,0,Bag_Size_g,150,170
+admin,2025-12-14 15:51:31,1,Bag_Size_g,300,150
+admin,2025-12-14 15:51:31,2,Bag_Size_g,150,200
