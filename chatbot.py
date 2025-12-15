@@ -8,6 +8,7 @@ from google.genai.errors import APIError
 import io
 
 # --- 1. Model Initialization ---
+# Using gemini-2.5-flash for better availability and cost-efficiency
 AI_MODEL = 'gemini-2.5-flash' 
 
 def init_ai_client():
@@ -33,7 +34,7 @@ def init_ai_client():
 def condense_dataframe_for_ai(df):
     """
     Analyzes the entire DataFrame and generates a comprehensive text summary
-    for the AI model's context. This is crucial for analyzing large datasets.
+    for the AI model's context.
     """
     summary = ["--- FULL DATASET SUMMARY ---"]
     
@@ -55,7 +56,6 @@ def condense_dataframe_for_ai(df):
          summary.append(f"Overall Efficiency: {efficiency:.2%}")
     
     summary.append("\n2. Production by Product (Top 5):")
-    # Using .to_markdown() requires the 'tabulate' library (must be in requirements.txt)
     prod_by_product = df.groupby('Product_Name')['Actual_Production_Units'].sum().nlargest(5).to_markdown()
     summary.append(prod_by_product)
     
@@ -174,12 +174,12 @@ def chatbot_page():
         with st.chat_message("model"):
             with st.spinner(f"Processing {'data analysis' if is_data_query else 'response'}..."):
                 try:
+                    # FIX: Removed the explicit 'system_instruction' parameter to resolve the "unexpected keyword argument" error.
+                    # The system instruction text is now correctly prepended to the 'full_prompt'.
                     response = client.models.generate_content(
                         model=AI_MODEL,
                         contents=full_prompt,
-                        config={'temperature': 0.7 if not is_data_query else 0.0},
-                        # System instruction is sent with every call to ensure persona is maintained
-                        system_instruction=system_instruction
+                        config={'temperature': 0.7 if not is_data_query else 0.0}
                     )
                     
                     st.markdown(response.text)
