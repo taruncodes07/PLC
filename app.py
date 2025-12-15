@@ -8,6 +8,7 @@ from editor import editor_page
 from audit_logger import audit_log_page
 from reports import reports_page
 from export_utils import export_page
+from chatbot import chatbot_page # NEW: Import the chatbot module
 
 # --- Configuration ---
 st.set_page_config(
@@ -18,14 +19,12 @@ st.set_page_config(
 )
 
 # --- CRITICAL FIX: Initialize Session State Keys at App Start ---
-# Ensure these keys exist before the sidebar logic attempts to read them.
 if 'page' not in st.session_state:
     st.session_state['page'] = 'Login'
 if 'logged_in' not in st.session_state:
     st.session_state['logged_in'] = False
 if 'user_info' not in st.session_state:
     st.session_state['user_info'] = None
-# Note: 'df' (for data) is intentionally not initialized here, but later in data_loader.py
 
 # Set Dark Theme (Visual styles)
 st.markdown("""
@@ -46,7 +45,7 @@ st.markdown("""
         background-color: #2D2D2D;
     }
     /* Metric Cards */
-    [data-testid="stMetric"] {
+    [data-testid="stMetric"], .css-1r6dm7m { /* Targeting the custom metric card container */
         background-color: #3C3C3C;
         padding: 15px;
         border-radius: 10px;
@@ -61,6 +60,7 @@ st.markdown("""
 PAGES = {
     "Login": authenticate,
     "Dashboard": dashboard_page,
+    "AI Chatbot (Beta)": chatbot_page, # NEW: Added Chatbot page
     "Load & Manage Dataset": data_loader_page,
     "Data Editor": editor_page,
     "Reports": reports_page,
@@ -73,12 +73,10 @@ with st.sidebar:
     st.header("🏭 Chips Factory App")
     st.markdown("---")
     
-    # The check below now works because 'logged_in' is guaranteed to exist.
     if not st.session_state['logged_in']:
         if st.button("Login", use_container_width=True):
             st.session_state['page'] = 'Login'
     
-    # If logged in, show navigation and user info
     else:
         user_info = st.session_state.get('user_info', {})
         st.success(f"User: {user_info.get('full_name', 'N/A')} ({user_info.get('role', 'N/A')})")
@@ -87,6 +85,7 @@ with st.sidebar:
         # Dynamic Navigation based on Role
         nav_buttons = {
             "Dashboard": "Viewer",
+            "AI Chatbot (Beta)": "Analyst", # NEW: Added Chatbot to Analyst/Admin view
             "Load & Manage Dataset": "Analyst",
             "Data Editor": "Admin",
             "Reports": "Analyst",
@@ -105,7 +104,6 @@ with st.sidebar:
             logout()
             
 # --- Page Rendering ---
-# Render the current page based on session state
 page_func = PAGES.get(st.session_state['page'])
 if page_func:
     page_func()
