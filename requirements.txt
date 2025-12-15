@@ -7,4 +7,3 @@ plotly
 python-docx
 fpdf2
 google.genai
-

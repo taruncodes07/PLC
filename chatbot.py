@@ -16,7 +16,7 @@ def init_ai_client():
     """Initializes the Gemini client, retrieving API key from Streamlit secrets."""
     try:
         # Streamlit Cloud/secrets integration
-        api_key = st.secrets["gemini"]["AIzaSyBmIGX2YiaL1nLFmGGQs7BeifA3yY-Y25w"]
+        api_key = st.secrets["gemini"]["api_key"]
         if not api_key:
              st.error("Gemini API Key not found. Please set it in .streamlit/secrets.toml.")
              return None
