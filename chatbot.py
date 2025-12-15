@@ -10,7 +10,7 @@ import io
 # --- 1. Model Initialization ---
 
 # Use a more powerful model for deep, complex database analysis
-AI_MODEL = 'gemini-2.5-pro' 
+AI_MODEL = 'gemini-2.5-flash' 
 
 def init_ai_client():
     """Initializes the Gemini client, retrieving API key from Streamlit secrets."""
