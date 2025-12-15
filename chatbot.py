@@ -9,7 +9,7 @@ import io
 
 # --- 1. Model Initialization ---
 
-# Use a more powerful model for deep, complex database analysis
+# Using gemini-2.5-flash for better availability and cost-efficiency
 AI_MODEL = 'gemini-2.5-flash' 
 
 def init_ai_client():
@@ -31,12 +31,12 @@ def init_ai_client():
         st.error(f"Error initializing Gemini client: {e}")
         return None
 
-# --- 2. Data Condensation Function (NEW) ---
+# --- 2. Data Condensation Function (UNCHANGED) ---
 
 def condense_dataframe_for_ai(df):
     """
     Analyzes the entire DataFrame and generates a comprehensive text summary
-    for the AI model's context. This is crucial for analyzing large datasets.
+    for the AI model's context.
     """
     summary = ["--- FULL DATASET SUMMARY ---"]
     
@@ -94,11 +94,11 @@ def chatbot_page():
     if not client:
         return
 
-    st.info(f"Using **{AI_MODEL}** to analyze the complete loaded dataset ({len(st.session_state['df'])} records). Ask for summaries, suggestions, or trend analysis.")
+    st.info(f"Using **{AI_MODEL}**. Ask for summaries, suggestions, or feel free to chat casually!")
     
     # Initialize chat history
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "model", "content": "Hello! I am your AI Production Analyst. I have loaded the full dataset summary and am ready for your questions."}]
+        st.session_state["messages"] = [{"role": "model", "content": "Hello! I am your AI Production Analyst. I have the data summary ready. How can I help you?"}]
 
     # Display chat messages
     for message in st.session_state.messages:
@@ -106,49 +106,56 @@ def chatbot_page():
             st.markdown(message["content"])
 
     # Accept user input
-    if prompt := st.chat_input("Enter your question about the data..."):
+    if prompt := st.chat_input("Enter your question..."):
         st.session_state.messages.append({"role": "user", "content": prompt})
         
         # Display user message immediately
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Generate condensed data summary from the ENTIRE dataframe
-        data_summary_context = condense_dataframe_for_ai(st.session_state['df'])
+        # --- NEW LOGIC: DETERMINE IF DATA CONTEXT IS NEEDED ---
         
-        # System instruction to define the AI's role and context
-        system_instruction = (
-            "You are an expert Senior Production Data Analyst. Your task is to analyze the provided "
-            "comprehensive summary of the manufacturing data. Do not mention the raw tables. "
-            "Analyze the overall KPIs, product breakdowns, downtime analysis, and waste figures to "
-            "answer the user's question. Provide actionable, high-level manufacturing suggestions "
-            "based on the worst performing areas (e.g., highest downtime reason or highest waste shift). "
-            "The data is a summary of all loaded records, not just a sample."
-        )
+        # Keywords suggesting a data query
+        data_keywords = ['summary', 'kpi', 'waste', 'downtime', 'product', 'efficiency', 'suggest', 'data']
+        
+        is_data_query = any(word in prompt.lower() for word in data_keywords)
 
-        # Construct the final prompt with the data context
-        full_prompt = (
-            f"{system_instruction}\n\n"
-            f"--- FULL DATASET SUMMARY FOR ANALYSIS:\n{data_summary_context}\n\n"
-            f"--- USER QUESTION: {prompt}"
-        )
+        if is_data_query:
+            # Load full context for analytical questions
+            data_summary_context = condense_dataframe_for_ai(st.session_state['df'])
+            
+            system_instruction = (
+                "You are an expert Senior Production Data Analyst. Your primary task is to use the provided "
+                "comprehensive manufacturing data summary to answer the user's analytical question. "
+                "Analyze the KPIs, breakdowns, and suggest actionable improvements. "
+                "The data is a summary of all loaded records."
+            )
+            full_prompt = (
+                f"{system_instruction}\n\n"
+                f"--- FULL DATASET SUMMARY FOR ANALYSIS:\n{data_summary_context}\n\n"
+                f"--- USER QUESTION: {prompt}"
+            )
+        else:
+            # Simple conversational prompt (no data context needed)
+            full_prompt = prompt
+            system_instruction = "You are a friendly, conversational AI assistant. Do not mention manufacturing or production data unless the user asks specifically about it."
+
+        # --- Generate model response ---
         
-        # Generate model response
         with st.chat_message("model"):
-            with st.spinner(f"Sending full summary to {AI_MODEL} for deep analysis..."):
+            with st.spinner(f"Processing {'data analysis' if is_data_query else 'response'}..."):
                 try:
                     response = client.models.generate_content(
                         model=AI_MODEL,
                         contents=full_prompt,
-                        # Setting temperature to 0 for factual, analytical responses
-                        config={'temperature': 0.0}
+                        config={'temperature': 0.7 if not is_data_query else 0.0}
                     )
                     
                     st.markdown(response.text)
                     st.session_state.messages.append({"role": "model", "content": response.text})
                 
                 except APIError as e:
-                    error_message = f"AI API Error: Could not process request. Details: {e}. Please verify your API Key and Model access."
+                    error_message = f"AI API Error: Could not process request. Details: {e}. Please try again."
                     st.error(error_message)
                     st.session_state.messages.append({"role": "model", "content": error_message})
                 except Exception as e:
