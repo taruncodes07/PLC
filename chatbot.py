@@ -162,3 +162,4 @@ def chatbot_page():
                     error_message = f"An unexpected error occurred: {e}"
                     st.error(error_message)
                     st.session_state.messages.append({"role": "model", "content": error_message})
+                    
