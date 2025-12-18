@@ -9,7 +9,7 @@ import io
 
 # --- 1. Model Initialization ---
 # Using gemini-2.5-flash for better availability and cost-efficiency
-AI_MODEL = 'gemini-2.5-flash' 
+AI_MODEL = 'gemini-2.5-flash-lite' 
 
 def init_ai_client():
     """Initializes the Gemini client, retrieving API key from Streamlit secrets."""
