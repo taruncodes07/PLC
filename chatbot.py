@@ -1,7 +1,6 @@
 # chatbot.py
 
 import streamlit as st
-import pandas as pd
 from auth import check_role, load_users
 from google import genai
 from google.genai.errors import APIError
@@ -11,6 +10,7 @@ import os
 # Using gemini-2.5-flash for better availability and cost-efficiency
 AI_MODEL = 'gemini-2.5-flash-lite'
 MAX_DATASET_BYTES = 1_500_000
+MAX_CONTEXT_MESSAGES = 6
 
 def init_ai_client():
     """Initializes the Gemini client, retrieving API key from Streamlit secrets."""
@@ -61,6 +61,52 @@ def read_dataset_text(file_path):
     return raw_bytes.decode('utf-8', errors='replace'), None
 
 
+def ensure_dataset_file(client, file_path):
+    """Uploads dataset to Gemini once and reuses the file reference."""
+    file_size = os.path.getsize(file_path)
+    if file_size > MAX_DATASET_BYTES:
+        return None, f"Dataset is too large ({file_size:,} bytes). Please use a smaller file."
+
+    file_mtime = os.path.getmtime(file_path)
+    cached_name = st.session_state.get('dataset_file_name')
+    cached_path = st.session_state.get('dataset_file_path')
+    cached_mtime = st.session_state.get('dataset_file_mtime')
+    cached_size = st.session_state.get('dataset_file_size')
+
+    if cached_name and cached_path == file_path and cached_mtime == file_mtime and cached_size == file_size:
+        try:
+            return client.files.get(name=cached_name), None
+        except Exception:
+            pass
+
+    try:
+        uploaded = client.files.upload(file=file_path)
+        st.session_state['dataset_file_name'] = uploaded.name
+        st.session_state['dataset_file_path'] = file_path
+        st.session_state['dataset_file_mtime'] = file_mtime
+        st.session_state['dataset_file_size'] = file_size
+        return uploaded, None
+    except Exception as e:
+        return None, f"Failed to upload dataset to Gemini: {e}"
+
+
+def build_conversation_context(messages, max_messages):
+    """Builds a text transcript of the most recent chat turns."""
+    if not messages:
+        return ""
+
+    recent = messages[-max_messages:]
+    lines = []
+    for msg in recent:
+        role = msg.get('role', 'user')
+        content = msg.get('content', '')
+        if role == 'model':
+            lines.append(f"Assistant: {content}")
+        else:
+            lines.append(f"User: {content}")
+    return "\n".join(lines)
+
+
 # --- 3. Chatbot Page Function ---
 
 def chatbot_page():
@@ -86,7 +132,7 @@ def chatbot_page():
     
     # Initialize chat history
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "model", "content": "Hello! I am your AI Production Analyst. I have the data summary ready. How can I help you?"}]
+        st.session_state["messages"] = [{"role": "model", "content": "Hello! I am your AI Production Analyst. I have the dataset ready. How can I help you?"}]
 
     # Display chat messages
     for message in st.session_state.messages:
@@ -135,30 +181,32 @@ def chatbot_page():
             
         # 2. Handle Data Query
         elif any(word in normalized_prompt for word in data_keywords):
-            dataset_text, dataset_error = read_dataset_text(dataset_path)
-            if dataset_error:
-                st.error(dataset_error)
-                return
-
             system_instruction = (
                 "You are an expert Senior Production Data Analyst. Your primary task is to analyze the provided "
                 "manufacturing dataset file content and answer the user's analytical question. "
                 "Do not invent data. If the dataset is missing information, state that clearly. "
                 "Avoid dumping large raw tables in the response."
             )
-            full_prompt = (
-                f"{system_instruction}\n\n"
-                f"--- DATASET FILE (CSV) ---\n"
-                f"File name: {os.path.basename(dataset_path)}\n"
-                f"File contents:\n{dataset_text}\n\n"
-                f"--- USER QUESTION: {prompt}"
-            )
             is_data_query = True
         
         # 3. Handle Casual Conversation
         else:
-            full_prompt = prompt
             system_instruction = "You are a friendly, conversational AI assistant. Do not mention manufacturing or production data unless the user asks specifically about it."
+
+        dataset_file, dataset_error = ensure_dataset_file(client, dataset_path)
+        if dataset_error:
+            st.error(dataset_error)
+            return
+
+        history_context = build_conversation_context(
+            st.session_state["messages"][:-1],
+            MAX_CONTEXT_MESSAGES
+        )
+        full_prompt = (
+            f"{system_instruction}\n\n"
+            f"--- CONVERSATION CONTEXT ---\n{history_context}\n\n"
+            f"--- USER QUESTION: {prompt}"
+        )
 
         # --- Generate model response ---
         
@@ -169,7 +217,7 @@ def chatbot_page():
                     # The system instruction text is now correctly prepended to the 'full_prompt'.
                     response = client.models.generate_content(
                         model=AI_MODEL,
-                        contents=full_prompt,
+                        contents=[dataset_file, full_prompt],
                         config={'temperature': 0.7 if not is_data_query else 0.0}
                     )
                     
