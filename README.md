@@ -127,18 +127,20 @@ A Streamlit app for loading, analyzing, editing, and reporting on production dat
 
 ### chatbot
 
-- **Purpose**: AI assistant for data summaries and Q&A with a Gemini model.
+- **Purpose**: AI assistant that uploads the dataset to Gemini once, reuses that file across prompts, and supports follow-up questions using recent conversation context.
 - **Libraries used**:
   - `streamlit` - UI rendering and chat interface.
-  - `pandas` - Data summary prep.
-  - `google.genai` - Gemini client.
+  - `google.genai` - Gemini client and file upload.
   - `google.genai.errors` - API error handling.
-  - `io` - Imported but not used in current chatbot flow.
-  - `auth.check_role` - Role enforcement.
+  - `os` - File checks and metadata.
+  - `auth.check_role`, `auth.load_users` - Role enforcement and last dataset lookup.
 - **User-defined functions**:
   - `init_ai_client()` - Reads API key from secrets and creates the Gemini client.
-  - `condense_dataframe_for_ai(df)` - Summarizes the dataset into text context.
-  - `chatbot_page()` - Chat UI, prompt handling, and model invocation.
+  - `get_last_dataset_path()` - Finds the last-used dataset file for the logged-in user.
+  - `read_dataset_text(file_path)` - Size-checks and reads dataset content (guardrail).
+  - `ensure_dataset_file(client, file_path)` - Uploads dataset to Gemini once and reuses the cached file reference.
+  - `build_conversation_context(messages, max_messages)` - Builds a short transcript from recent messages for follow-up context.
+  - `chatbot_page()` - Chat UI, prompt handling, file attachment, and model invocation.
 
 ## Dependencies
 
@@ -156,5 +158,6 @@ See [requirements.txt](requirements.txt) for the full list. Core dependencies in
 ## Notes
 
 - The app expects a Streamlit secrets entry for the Gemini API key at `gemini.api_key`.
+- The chatbot uploads the dataset once per session and reuses it for follow-up questions.
 - `audit_logs.csv` is created automatically when edits occur.
 - Role-based access controls hide or block certain pages.
