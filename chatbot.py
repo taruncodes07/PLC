@@ -2,14 +2,15 @@
 
 import streamlit as st
 import pandas as pd
-from auth import check_role
+from auth import check_role, load_users
 from google import genai
 from google.genai.errors import APIError
-import io
+import os
 
 # --- 1. Model Initialization ---
 # Using gemini-2.5-flash for better availability and cost-efficiency
-AI_MODEL = 'gemini-2.5-flash-lite' 
+AI_MODEL = 'gemini-2.5-flash-lite'
+MAX_DATASET_BYTES = 1_500_000
 
 def init_ai_client():
     """Initializes the Gemini client, retrieving API key from Streamlit secrets."""
@@ -31,48 +32,33 @@ def init_ai_client():
 
 # --- 2. Data Condensation Function ---
 
-def condense_dataframe_for_ai(df):
-    """
-    Analyzes the entire DataFrame and generates a comprehensive text summary
-    for the AI model's context.
-    """
-    summary = ["--- FULL DATASET SUMMARY ---"]
-    
-    # Ensure Date is in datetime format before aggregation/min/max
-    df['Date'] = pd.to_datetime(df['Date'], errors='coerce')
+def get_last_dataset_path():
+    """Returns the last dataset file path for the logged-in user."""
+    user_info = st.session_state.get('user_info', {})
+    username = user_info.get('username')
+    if not username:
+        return None
 
-    # 1. Overall KPIs
-    total_production = df['Actual_Production_Units'].sum()
-    total_downtime = df['Downtime_Minutes'].sum()
-    total_waste = df['Waste_Weight_kg'].sum()
-    
-    summary.append(f"Total Production (Units): {total_production:,.0f}")
-    summary.append(f"Total Downtime (Minutes): {total_downtime:,.0f}")
-    summary.append(f"Total Waste (kg): {total_waste:,.1f}")
-    
-    # Calculate Efficiency (requires Planned Units, assume column exists)
-    if 'Planned_Production_Units' in df.columns and df['Planned_Production_Units'].sum() > 0:
-         efficiency = df['Actual_Production_Units'].sum() / df['Planned_Production_Units'].sum()
-         summary.append(f"Overall Efficiency: {efficiency:.2%}")
-    
-    summary.append("\n2. Production by Product (Top 5):")
-    prod_by_product = df.groupby('Product_Name')['Actual_Production_Units'].sum().nlargest(5).to_markdown()
-    summary.append(prod_by_product)
-    
-    summary.append("\n3. Downtime Breakdown by Reason:")
-    downtime_by_reason = df.groupby('Downtime_Reason')['Downtime_Minutes'].sum().nlargest(5).to_markdown()
-    summary.append(downtime_by_reason)
-    
-    summary.append("\n4. Waste Analysis by Shift:")
-    waste_by_shift = df.groupby('Shift')['Waste_Weight_kg'].sum().to_markdown()
-    summary.append(waste_by_shift)
-    
-    # 5. Date Range
-    start_date = df['Date'].min().strftime('%Y-%m-%d')
-    end_date = df['Date'].max().strftime('%Y-%m-%d')
-    summary.append(f"\nData Period: {start_date} to {end_date} ({len(df)} total records).")
-    
-    return "\n".join(summary)
+    users = load_users()
+    last_dataset = users.get(username, {}).get('last_dataset')
+    if not last_dataset or last_dataset == 'None':
+        return None
+
+    if not os.path.exists(last_dataset):
+        return None
+
+    return last_dataset
+
+
+def read_dataset_text(file_path):
+    """Reads the dataset file as UTF-8 text with a size guard."""
+    file_size = os.path.getsize(file_path)
+    if file_size > MAX_DATASET_BYTES:
+        return None, f"Dataset is too large ({file_size:,} bytes). Please use a smaller file."
+
+    with open(file_path, 'rb') as f:
+        raw_bytes = f.read()
+    return raw_bytes.decode('utf-8', errors='replace'), None
 
 
 # --- 3. Chatbot Page Function ---
@@ -86,9 +72,10 @@ def chatbot_page():
         st.error("Access Denied: You must be an Analyst or Admin to use the AI Chatbot.")
         return
 
-    # Check for dataset presence
-    if 'df' not in st.session_state or st.session_state['df'].empty:
-        st.warning("No dataset loaded. Please load production data on the 'Load & Manage Dataset' page first.")
+    # Check for dataset presence on disk
+    dataset_path = get_last_dataset_path()
+    if not dataset_path:
+        st.warning("No dataset file found. Please load a dataset on the 'Load & Manage Dataset' page first.")
         return
 
     client = init_ai_client()
@@ -148,18 +135,22 @@ def chatbot_page():
             
         # 2. Handle Data Query
         elif any(word in normalized_prompt for word in data_keywords):
-            
-            data_summary_context = condense_dataframe_for_ai(st.session_state['df'])
-            
+            dataset_text, dataset_error = read_dataset_text(dataset_path)
+            if dataset_error:
+                st.error(dataset_error)
+                return
+
             system_instruction = (
-                "You are an expert Senior Production Data Analyst. Your primary task is to use the provided "
-                "comprehensive manufacturing data summary to answer the user's analytical question. "
-                "Analyze the KPIs, breakdowns, and suggest actionable improvements. Do not show the raw tables. "
-                "The data is a summary of all loaded records."
+                "You are an expert Senior Production Data Analyst. Your primary task is to analyze the provided "
+                "manufacturing dataset file content and answer the user's analytical question. "
+                "Do not invent data. If the dataset is missing information, state that clearly. "
+                "Avoid dumping large raw tables in the response."
             )
             full_prompt = (
                 f"{system_instruction}\n\n"
-                f"--- FULL DATASET SUMMARY FOR ANALYSIS:\n{data_summary_context}\n\n"
+                f"--- DATASET FILE (CSV) ---\n"
+                f"File name: {os.path.basename(dataset_path)}\n"
+                f"File contents:\n{dataset_text}\n\n"
                 f"--- USER QUESTION: {prompt}"
             )
             is_data_query = True
