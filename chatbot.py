@@ -164,6 +164,7 @@ def chatbot_page():
                 "Your primary function is to analyze the production dataset currently loaded into the app. "
                 "You MUST NOT give a generic LLM capabilities list. You MUST ONLY state your capabilities "
                 "strictly in the context of analyzing the manufacturing data. "
+                "If asked for metrics or summary based on the dataset, give it as a structured list. If asked for suggestions, provide actionable insights based on the data. "
             )
             
             # Forcing the structured response directly in the prompt
