@@ -74,7 +74,7 @@ with st.sidebar:
     st.markdown("---")
     
     if not st.session_state['logged_in']:
-        if st.button("Login", use_container_width=True):
+        if st.button("Login", width='stretch'):
             st.session_state['page'] = 'Login'
     
     else:
@@ -96,11 +96,11 @@ with st.sidebar:
         st.subheader("Menu")
         for label, required_role in nav_buttons.items():
             if check_role(required_role):
-                if st.button(label, key=f"nav_{label}", use_container_width=True, help=f"Requires {required_role} role"):
+                if st.button(label, key=f"nav_{label}", width='stretch', help=f"Requires {required_role} role"):
                     st.session_state['page'] = label
 
         st.markdown("---")
-        if st.button("Logout", key="logout_btn", use_container_width=True):
+        if st.button("Logout", key="logout_btn", width='stretch'):
             logout()
             
 # --- Page Rendering ---

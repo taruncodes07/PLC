@@ -29,7 +29,7 @@ def editor_page():
         df_original,
         key="data_editor",
         num_rows="dynamic",
-        use_container_width=True,
+        width='stretch',
         column_order=df_original.columns.tolist(),
         disabled= ['Row_ID', 'Date', 'Shift', 'Product_ID', 'Supervisor_ID', 'Machine_Operator_ID'] # Disable key identifiers
     )

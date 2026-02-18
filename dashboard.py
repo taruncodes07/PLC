@@ -275,7 +275,7 @@ def dashboard_page():
             labels={'Actual_Production_Units': 'Production Units'},
             template='plotly_dark'
         )
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width='stretch')
         
         fig2 = px.bar(
             df_daily, 
@@ -285,7 +285,7 @@ def dashboard_page():
             labels={'Downtime_Minutes': 'Downtime (min)'},
             template='plotly_dark'
         )
-        st.plotly_chart(fig2, use_container_width=True)
+        st.plotly_chart(fig2, width='stretch')
 
     with tab2:
         st.subheader("Product & Shift Production Breakdown")
@@ -300,7 +300,7 @@ def dashboard_page():
             labels={'Actual_Production_Units': 'Units', 'Product_Name': 'Product'},
             template='plotly_dark'
         )
-        st.plotly_chart(fig_bar, use_container_width=True)
+        st.plotly_chart(fig_bar, width='stretch')
         
     with tab3:
         st.subheader("Downtime Reason Distribution")
@@ -313,13 +313,13 @@ def dashboard_page():
             title='Distribution of Total Downtime Minutes by Reason',
             template='plotly_dark'
         )
-        st.plotly_chart(fig_pie, use_container_width=True)
+        st.plotly_chart(fig_pie, width='stretch')
         
     # --- 5. Data Table (Analyst/Admin only can see the full table) ---
     if check_role('Analyst'):
         st.markdown("---")
         st.header("Raw Filtered Data Table")
-        st.dataframe(df_filtered.drop(columns=['Row_ID'], errors='ignore'), use_container_width=True)
+        st.dataframe(df_filtered.drop(columns=['Row_ID'], errors='ignore'), width='stretch')
 
 # Note: You need to ensure 'auth.py' exists and st.session_state['df'] is populated
 # with a DataFrame containing the expected columns.

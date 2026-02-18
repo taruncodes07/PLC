@@ -345,7 +345,7 @@ def generate_pdf_report(df_filtered, kpis, insights):
     pdf.ln(6)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'X. Recommendations & Actions', 0, 1, 'L')
-    pdf.set_font('Arial', '', 10)
+    pdf.set_font('Arial', '', 9)
     recommendations = []
     if metrics['efficiency'] < 0.95:
         recommendations.append("Review planning accuracy and line balancing to improve plan attainment.")
@@ -359,7 +359,7 @@ def generate_pdf_report(df_filtered, kpis, insights):
     if not recommendations:
         recommendations.append("Maintain current operating practices and continue monitoring key drivers.")
     for item in recommendations:
-        pdf.multi_cell(0, 5, f"- {item}", 0, 'L')
+        pdf.multi_cell(pdf.w - 15, 5, f"- {item}", 0, 'L')
 
     pdf.ln(6)
     pdf.set_font('Arial', 'B', 12)

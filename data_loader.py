@@ -45,7 +45,7 @@ def data_loader_page():
     # Option 1: Load Last Used Dataset
     if last_dataset and last_dataset != 'None':
         st.subheader("Load Last Used Dataset")
-        if st.button(f"Reload: {last_dataset}", use_container_width=True):
+        if st.button(f"Reload: {last_dataset}", width='stretch'):
             st.session_state['df'] = load_data(last_dataset)
             st.success(f"Successfully loaded {last_dataset}.")
     
@@ -68,7 +68,7 @@ def data_loader_page():
         st.success(f"Successfully uploaded and loaded '{file_name}'.")
 
     # Option 3: Load Default
-    if st.button(f"Load Default Dataset: {DEFAULT_DATASET}", use_container_width=True):
+    if st.button(f"Load Default Dataset: {DEFAULT_DATASET}", width='stretch'):
         st.session_state['df'] = load_data(DEFAULT_DATASET)
         save_last_dataset(username, DEFAULT_DATASET)
         st.success(f"Successfully loaded default dataset: {DEFAULT_DATASET}.")
@@ -78,4 +78,4 @@ def data_loader_page():
         df = st.session_state['df']
         st.markdown("### Current Dataset Preview")
         st.info(f"Loaded {len(df)} rows and {len(df.columns)} columns.")
-        st.dataframe(df.head(), use_container_width=True)
+        st.dataframe(df.head(), width='stretch')

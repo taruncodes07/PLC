@@ -78,4 +78,4 @@ def audit_log_page():
         st.info("No audit logs found yet.")
     else:
         st.info(f"Displaying {len(df_log)} audit entries.")
-        st.dataframe(df_log, use_container_width=True)
+        st.dataframe(df_log, width='stretch')
