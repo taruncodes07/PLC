@@ -1,0 +1,770 @@
+================================================================================
+STREAMLIT LIBRARY: FUNCTIONS USED IN POTATO CHIPS FACTORY PRODUCTION APP
+================================================================================
+Generated: February 18, 2026
+This document lists all Streamlit functions used in the project with syntax and explanations.
+
+================================================================================
+1. PAGE CONFIGURATION & SETUP
+================================================================================
+
+1.1 st.set_page_config()
+Syntax:
+    st.set_page_config(
+        page_title="string",
+        page_icon="string/emoji",
+        layout="wide|centered",
+        initial_sidebar_state="expanded|collapsed|auto"
+    )
+
+Explanation:
+    Configures basic settings for the Streamlit web page. Must be called first,
+    before any other Streamlit commands. Sets the browser tab title, icon, layout
+    width, and sidebar default state.
+
+Usage in Project:
+    App sets page title to "Chips Factory Production Report Generator",
+    icon to "🏭", layout to "wide", and sidebar to "expanded".
+
+Location: app.py (line 13)
+
+================================================================================
+2. TEXT & DISPLAY FUNCTIONS
+================================================================================
+
+2.1 st.title()
+Syntax:
+    st.title("text")
+
+Explanation:
+    Displays a large, bold title on the page (equivalent to H1 in HTML).
+    Used for main heading of each page.
+
+Usage in Project:
+    Used in multiple pages: dashboard.py, data_loader.py, editor.py,
+    reports.py, export_utils.py, audit_logger.py, auth.py, chatbot.py
+
+Example:
+    st.title("📊 Weekly Production Dashboard")
+
+================================================================================
+
+2.2 st.header()
+Syntax:
+    st.header("text")
+
+Explanation:
+    Displays a header text (equivalent to H2 in HTML). Slightly smaller than title.
+    Used for section headers within pages.
+
+Usage in Project:
+    Used in app.py (sidebar header), dashboard.py (Production Intelligence)
+
+Example:
+    st.header("📈 Production Intelligence Summary")
+
+================================================================================
+
+2.3 st.subheader()
+Syntax:
+    st.subheader("text")
+
+Explanation:
+    Displays a subheader (equivalent to H3 in HTML). Smaller than header.
+    Used for subsections.
+
+Usage in Project:
+    Used in app.py (Menu sidebar), data_loader.py (section headers)
+
+Example:
+    st.subheader("Upload New Production Data (CSV)")
+
+================================================================================
+
+2.4 st.markdown()
+Syntax:
+    st.markdown("markdown_text", unsafe_allow_html=True/False)
+
+Explanation:
+    Renders markdown-formatted text. Supports markdown syntax (bold, italic, links).
+    Set unsafe_allow_html=True to embed HTML/CSS (use with caution).
+
+Usage in Project:
+    Used extensively for:
+    - Displaying markdown text and formatting
+    - Applying custom CSS styles for dark theme
+    - Displaying dividers (st.markdown("---"))
+    - Rendering HTML for custom metric cards
+
+Examples:
+    st.markdown("---")  # Divider
+    st.markdown(f"**{insights}**")  # Bold text
+    st.markdown(html_card, unsafe_allow_html=True)  # Custom HTML
+
+================================================================================
+
+2.5 st.info()
+Syntax:
+    st.info("message")
+
+Explanation:
+    Displays an informational message in a blue box to provide helpful context
+    to users.
+
+Usage in Project:
+    Used in multiple files to inform users about current state:
+    - data_loader.py: "Loaded X rows and Y columns"
+    - audit_logger.py: "Displaying X audit entries"
+    - reports.py: Report generation instructions
+
+Example:
+    st.info(f"Loaded {len(df)} rows and {len(df.columns)} columns.")
+
+================================================================================
+
+2.6 st.warning()
+Syntax:
+    st.warning("message")
+
+Explanation:
+    Displays a warning message in an orange box. Used for non-critical alerts
+    that users should be aware of.
+
+Usage in Project:
+    Used to inform users of missing data or access:
+    - "No dataset file found"
+    - "No dataset loaded"
+    - "Audit log file not found"
+
+Example:
+    st.warning("No dataset loaded. Please load data first.")
+
+================================================================================
+
+2.7 st.error()
+Syntax:
+    st.error("message")
+
+Explanation:
+    Displays an error message in a red box. Used for critical failures or
+    permission denials.
+
+Usage in Project:
+    Used for authentication failures, file errors, permission checks:
+    - "Incorrect username or password"
+    - "Access Denied: You must be an Admin"
+    - File loading errors
+
+Example:
+    st.error("Access Denied: You must be an Admin to edit data.")
+
+================================================================================
+
+2.8 st.success()
+Syntax:
+    st.success("message")
+
+Explanation:
+    Displays a success message in a green box. Used to confirm completed actions.
+
+Usage in Project:
+    Confirms successful operations:
+    - Login proceedings
+    - Data upload completion
+    - Changes applied
+    - File export readiness
+
+Example:
+    st.success("Successfully loaded default dataset.")
+
+================================================================================
+3. USER INPUT COMPONENTS
+================================================================================
+
+3.1 st.button()
+Syntax:
+    st.button(
+        label="text",
+        key="optional_unique_id",
+        use_container_width=True/False,
+        help="tooltip_text",
+        type="secondary|primary"
+    )
+
+Explanation:
+    Creates a clickable button. Returns True when clicked, False otherwise.
+    Can use key parameter for session state persistence.
+
+Usage in Project:
+    Login/logout: "Login", "Logout"
+    Navigation: Menu buttons in sidebar
+    Data operations: "Apply Changes", "Generate & Download Report"
+    Data loading: "Reload dataset", "Load Default Dataset"
+
+Example:
+    if st.button("Login", use_container_width=True):
+        st.session_state['page'] = 'Login'
+
+================================================================================
+
+3.2 st.text_input()
+Syntax:
+    st.text_input(
+        label="string",
+        value="default_value",
+        type="default|password",
+        key="optional_id"
+    )
+
+Explanation:
+    Creates a text input field for user to enter single-line text.
+    type="password" hides the input (for passwords/sensitive data).
+
+Usage in Project:
+    Username/password inputs in auth.py
+    File name inputs in reports.py and export_utils.py
+
+Example:
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+    file_name = st.text_input("Report File Name", "Weekly_Report")
+
+================================================================================
+
+3.3 st.form()
+Syntax:
+    with st.form("form_key"):
+        # Input components
+        submitted = st.form_submit_button("Submit")
+
+Explanation:
+    Creates a form container that batches multiple input components.
+    All inputs are submitted together when the submit button is clicked.
+    Prevents re-running the script for each input change.
+
+Usage in Project:
+    Login form in auth.py wraps username, password, and submit button
+
+Example:
+    with st.form("login_form"):
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        submitted = st.form_submit_button("Login")
+
+================================================================================
+
+3.4 st.form_submit_button()
+Syntax:
+    st.form_submit_button(label="text")
+
+Explanation:
+    Creates a submit button for forms. Must be used within st.form() context.
+    Returns True when clicked.
+
+Usage in Project:
+    Login form submission button in auth.py
+
+Example:
+    submitted = st.form_submit_button("Login")
+
+================================================================================
+
+3.5 st.file_uploader()
+Syntax:
+    st.file_uploader(
+        label="string",
+        type="list_of_extensions",
+        accept_multiple_files=True/False
+    )
+
+Explanation:
+    Creates a file upload widget. Returns uploaded file object or None if no file.
+    Supports specifying allowed file types.
+
+Usage in Project:
+    Upload CSV files in data_loader.py for new production datasets
+
+Example:
+    uploaded_file = st.file_uploader("Choose a CSV file", type=['csv'])
+
+================================================================================
+
+3.6 st.selectbox()
+Syntax:
+    st.selectbox(
+        label="string",
+        options=list/tuple,
+        index=default_index,
+        key="optional_id"
+    )
+
+Explanation:
+    Creates a dropdown select menu. Returns the selected value.
+    Users can only select one option.
+
+Usage in Project:
+    Export format selection in reports.py: "PDF" or "Word (.docx)"
+
+Example:
+    export_type = st.selectbox("Select Export Type", ["PDF", "Word (.docx)"])
+
+================================================================================
+
+3.7 st.multiselect()
+Syntax:
+    st.multiselect(
+        label="string",
+        options=list/tuple,
+        default=list_of_defaults,
+        key="optional_id"
+    )
+
+Explanation:
+    Creates a multi-select dropdown. Returns a list of selected values.
+    Users can select zero or more options.
+
+Usage in Project:
+    Dashboard filters in dashboard.py for Shifts, Products, Operators, Downtime Reasons
+
+Example:
+    selected_shifts = st.sidebar.multiselect("Select Shift(s)", options=shifts, default=shifts)
+
+================================================================================
+
+3.8 st.date_input()
+Syntax:
+    st.date_input(
+        label="string",
+        value=default_date,
+        min_value=earliest_date,
+        max_value=latest_date
+    )
+
+Explanation:
+    Creates a date picker widget. Returns a date or tuple of dates (for range).
+    Supports min/max date constraints.
+
+Usage in Project:
+    Date range filter in dashboard.py for filtering production data by date
+
+Example:
+    date_range = st.sidebar.date_input(
+        "Date Range",
+        value=(default_start, default_end),
+        min_value=min_date,
+        max_value=max_date
+    )
+
+================================================================================
+
+3.9 st.chat_input()
+Syntax:
+    st.chat_input(
+        placeholder="string",
+        key="optional_id"
+    )
+
+Explanation:
+    Creates a chat message input field at the bottom of page.
+    Returns the typed message string or None if empty.
+
+Usage in Project:
+    Chatbot page in chatbot.py for AI Production Analyst conversations
+
+Example:
+    if prompt := st.chat_input("Enter your question..."):
+        # Process the user's prompt
+
+================================================================================
+
+3.10 st.data_editor()
+Syntax:
+    st.data_editor(
+        data=dataframe,
+        key="unique_key",
+        num_rows="fixed|dynamic",
+        use_container_width=True/False,
+        column_order=list_of_columns,
+        disabled=list_of_columns_to_disable
+    )
+
+Explanation:
+    Creates an editable table widget for displaying and editing DataFrames.
+    num_rows="dynamic" allows adding/removing rows.
+    Returns the edited DataFrame.
+    disabled parameter prevents editing specific columns.
+
+Usage in Project:
+    Data editor in editor.py for admin-level data editing with change tracking
+
+Example:
+    edited_df = st.data_editor(
+        df_original,
+        key="data_editor",
+        num_rows="dynamic",
+        use_container_width=True,
+        disabled=['Row_ID', 'Date', 'Shift']
+    )
+
+================================================================================
+4. DATA DISPLAY COMPONENTS
+================================================================================
+
+4.1 st.dataframe()
+Syntax:
+    st.dataframe(
+        data=dataframe,
+        use_container_width=True/False,
+        height=pixels,
+        column_order=list_of_columns
+    )
+
+Explanation:
+    Displays a DataFrame as an interactive, sortable table.
+    Supports native scrolling and column operations.
+    Read-only (use st.data_editor for editable tables).
+
+Usage in Project:
+    Display dataset preview in data_loader.py
+    Display audit logs in audit_logger.py
+
+Example:
+    st.dataframe(df.head(), use_container_width=True)
+
+================================================================================
+
+4.2 st.chat_message()
+Syntax:
+    with st.chat_message(name="user|assistant|ai|human"):
+        st.write/markdown/other_display_commands()
+
+Explanation:
+    Creates a chat message container with avatar and styling.
+    Used within a context manager (with statement).
+    Different 'name' values show different built-in avatars.
+
+Usage in Project:
+    Display chat conversation in chatbot.py
+
+Example:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
+
+================================================================================
+5. CONTAINER & LAYOUT COMPONENTS
+================================================================================
+
+5.1 st.sidebar
+Syntax:
+    with st.sidebar:
+        # Components are added to sidebar
+    
+    Or direct call:
+    st.sidebar.button("label")
+    st.sidebar.title("text")
+    st.sidebar.header("text")
+
+Explanation:
+    Places components in the sidebar (left panel). Can use as context manager
+    or call methods directly on st.sidebar.
+
+Usage in Project:
+    Main navigation menu in app.py
+    Filters section in dashboard.py (dates, shifts, products, etc.)
+
+Example:
+    with st.sidebar:
+        st.header("🏭 Chips Factory App")
+        if st.button("Login", use_container_width=True):
+            st.session_state['page'] = 'Login'
+
+================================================================================
+
+5.2 st.columns()
+Syntax:
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.button("Button 1")
+    with col2:
+        st.button("Button 2")
+
+Explanation:
+    Creates equal-width columns for side-by-side layout.
+    Specify number or list of width ratios.
+    Used with context manager to add components to each column.
+
+Usage in Project:
+    Dashboard.py uses columns for displaying KPI metric cards
+
+Example:
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        custom_metric_card(col1, label, value, full_value)
+
+================================================================================
+6. STATUS & FEEDBACK COMPONENTS
+================================================================================
+
+6.1 st.spinner()
+Syntax:
+    with st.spinner("Loading message"):
+        # Long-running operation
+
+Explanation:
+    Shows a loading spinner with message while code block executes.
+    Automatically dismisses when block completes.
+
+Usage in Project:
+    Report generation in reports.py shows spinner during PDF/DOCX generation
+
+Example:
+    with st.spinner("Generating PDF Report..."):
+        # Generate PDF content
+
+================================================================================
+
+6.2 st.download_button()
+Syntax:
+    st.download_button(
+        label="string",
+        data=bytes/string,
+        file_name="string",
+        mime="string"
+    )
+
+Explanation:
+    Creates a download button for files. user clicks to download.
+    data can be bytes (binary files) or string (text files).
+    mime specifies file type (e.g., 'text/csv', 'application/pdf').
+
+Usage in Project:
+    Download CSV exports in export_utils.py
+    Download PDF/DOCX reports in reports.py
+
+Example:
+    st.download_button(
+        label="Click to Download",
+        data=csv_data,
+        file_name='production_data.csv',
+        mime='text/csv'
+    )
+
+================================================================================
+7. STATE MANAGEMENT
+================================================================================
+
+7.1 st.session_state
+Syntax:
+    st.session_state['key'] = value  # Set
+    value = st.session_state['key']  # Get
+    if 'key' not in st.session_state:  # Check existence
+        st.session_state['key'] = default_value
+
+Explanation:
+    Dictionary-like object that persists data across page reruns within a session.
+    Each user gets their own session state.
+    Survives script reruns but not page refreshes (unless explicitly saved).
+
+Usage in Project:
+    Stores login state, user info, loaded DataFrame, loaded dataset file reference,
+    chat history, page navigation state.
+
+Examples in Project:
+    st.session_state['page'] = 'Dashboard'  # Navigation
+    st.session_state['logged_in'] = True  # Login tracking
+    st.session_state['df'] = df  # Dataset storage
+    st.session_state['messages'] = [...]  # Chat history
+
+================================================================================
+
+7.2 st.rerun()
+Syntax:
+    st.rerun()
+
+Explanation:
+    Reruns the entire script from top to bottom.
+    Used after state changes to refresh UI and reflect updates.
+
+Usage in Project:
+    auth.py: After successful login
+    auth.py: After logout
+    editor.py: After applying changes
+
+Example:
+    if user_data['hashed_password'] == hash_password(password):
+        st.session_state['logged_in'] = True
+        st.rerun()
+
+================================================================================
+
+7.3 st.secrets
+Syntax:
+    api_key = st.secrets["section"]["key"]
+
+Explanation:
+    Accesses sensitive configuration from Streamlit secrets file
+    (.streamlit/secrets.toml or Streamlit Cloud UI).
+    Used for API keys, database credentials, etc.
+    Secure: values never exposed in code or logs.
+
+Usage in Project:
+    chatbot.py: Retrieves Gemini AI API key
+    api_key = st.secrets["gemini"]["api_key"]
+
+================================================================================
+8. CACHING & PERFORMANCE
+================================================================================
+
+8.1 @st.cache_data()
+Syntax:
+    @st.cache_data(show_spinner="Loading message", ttl=seconds)
+    def function_name():
+        # Code that performs expensive computation
+        return result
+
+Explanation:
+    Decorator that caches function results. Function only re-executes if:
+    - Input arguments change
+    - Code in function changes
+    - Cache expires (ttl parameter)
+    
+    show_spinner displays loading message during first execution.
+    ttl (time-to-live) in seconds before cache invalidates.
+
+Usage in Project:
+    data_loader.py: Caches CSV data loading with spinner
+    audit_logger.py: Caches audit log loading with 60-second TTL
+
+Example:
+    @st.cache_data(show_spinner="Loading data and parsing columns...")
+    def load_data(file_path):
+        df = pd.read_csv(file_path)
+        return df
+
+================================================================================
+9. CONTROL FLOW
+================================================================================
+
+9.1 Conditional Logic with State
+Pattern:
+    if st.session_state['logged_in']:
+        # Show authenticated content
+    else:
+        # Show login form
+
+Explanation:
+    Use session state to conditionally render different content based on user state.
+
+Usage in Project:
+    app.py: Show different sidebar options based on login state
+    auth.py: Show welcome message if logged in, login form if not
+    editor.py: Show editor only if user is Admin role
+    chatbot.py: Show chatbot only if user is Analyst role
+
+================================================================================
+10. SPECIAL COMMANDS & ARGUMENTS
+================================================================================
+
+10.1 use_container_width=True
+Explanation:
+    When set on buttons, inputs, or display components, stretches them to fill
+    the full width of their container. Makes UI more spacious and cleaner.
+
+Used on:
+    st.button(), st.dataframe(), st.file_uploader()
+
+Example:
+    st.button("Login", use_container_width=True)
+
+================================================================================
+
+10.2 Key Parameter
+Explanation:
+    Unique identifier for input components. Prevents conflicts when same component
+    appears multiple times. Essential for maintaining separate state.
+
+Used on:
+    st.button(key="nav_Dashboard")
+    st.form(key="login_form")
+
+================================================================================
+
+10.3 Type Parameter (for buttons)
+Explanation:
+    Controls button styling and visual hierarchy.
+    "secondary" (default): gray button
+    "primary": colored button (default action)
+
+Example:
+    st.button("Apply Changes and Save", type="primary")
+
+================================================================================
+11. SUMMARY TABLE OF FUNCTIONS
+================================================================================
+
+FUNCTION NAME               | PURPOSE                          | FILE(S) USED IN
+----------------------------+----------------------------------+-------------------
+st.set_page_config()       | Configure page title/icon/layout | app.py
+st.title()                 | Display H1 heading               | 8 files (all pages)
+st.header()                | Display H2 heading               | app.py, dashboard.py
+st.subheader()             | Display H3 heading               | app.py, data_loader.py
+st.markdown()              | Display styled text              | 7 files
+st.info()                  | Show info message (blue)         | 6 files
+st.warning()               | Show warning (orange)            | 5 files
+st.error()                 | Show error (red)                 | 7 files
+st.success()               | Show success (green)             | 6 files
+st.button()                | Interactive button               | 7 files
+st.text_input()            | Single-line text input           | auth.py, reports.py, export_utils.py
+st.form()                  | Batch input submission           | auth.py
+st.form_submit_button()    | Submit button in form            | auth.py
+st.file_uploader()         | Upload file widget               | data_loader.py
+st.selectbox()             | Single-select dropdown           | reports.py
+st.multiselect()           | Multi-select dropdown            | dashboard.py
+st.date_input()            | Date picker                      | dashboard.py
+st.chat_input()            | Chat message input               | chatbot.py
+st.data_editor()           | Editable table                   | editor.py
+st.dataframe()             | Display table (read-only)        | data_loader.py, audit_logger.py
+st.chat_message()          | Chat message container           | chatbot.py
+st.sidebar                 | Sidebar layout                   | app.py, dashboard.py
+st.columns()               | Side-by-side columns             | dashboard.py
+st.spinner()               | Loading indicator                | reports.py
+st.download_button()       | Download file button             | export_utils.py, reports.py
+st.session_state           | Persistent session data          | All files
+st.rerun()                 | Re-run script                    | auth.py, editor.py
+st.secrets                 | Access secret config             | chatbot.py
+@st.cache_data()           | Cache function output            | data_loader.py, audit_logger.py
+
+================================================================================
+12. NOTES ON BEST PRACTICES USED IN PROJECT
+================================================================================
+
+1. ROLE-BASED ACCESS CONTROL:
+   Functions check user roles before displaying sensitive content.
+   Pattern: if not check_role('Admin'): st.error("Access Denied")
+
+2. SESSION STATE FOR NAVIGATION:
+   st.session_state['page'] controls which function/page is rendered.
+   Allows multi-page app without st.page_link() (older Streamlit version).
+
+3. CONDITIONAL DATA LOADING:
+   Data loads only if 'df' in st.session_state and not empty.
+   Prevents errors when no dataset is loaded.
+
+4. FORM-BASED INPUT BATCHING:
+   Login form uses st.form() to prevent reruns on each keystroke.
+   More efficient than individual st.text_input() calls.
+
+5. CACHING FOR PERFORMANCE:
+   CSV data and audit logs use @st.cache_data() to avoid re-reading files.
+   ttl parameter on audit logs ensures fresh data (60 seconds).
+
+6. CUSTOM STYLING WITH MARKDOWN:
+   Dark theme implemented via st.markdown() with CSS.
+   Custom metric cards created with HTML + markdown.
+
+================================================================================
+END OF DOCUMENT
+================================================================================
+
+For official Streamlit documentation, visit: https://docs.streamlit.io

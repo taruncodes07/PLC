@@ -12,7 +12,7 @@ from chatbot import chatbot_page # NEW: Import the chatbot module
 
 # --- Configuration ---
 st.set_page_config(
-    page_title="Chips Factory Production Report Generator",
+    page_title="Weekly Production Report Generator",
     page_icon="🏭",
     layout="wide",
     initial_sidebar_state="expanded"
