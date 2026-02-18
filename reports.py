@@ -365,7 +365,7 @@ def generate_pdf_report(df_filtered, kpis, insights):
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'XI. Appendix - Descriptive Statistics', 0, 1, 'L')
     stats = df_filtered[['Actual_Production_Units', 'Planned_Production_Units', 'Downtime_Minutes', 'Waste_Weight_kg']].describe()
-    stats = stats.round(2)
+    stats = stats.loc[['mean', 'std', 'min', 'max']].round(2)
     pdf.set_font('Arial', 'B', 8)
     pdf.set_fill_color(220, 220, 220)
     stat_cols = [pdf.w * 0.2] * 5
@@ -374,12 +374,12 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(stat_cols[i], 6, header, 1, 0, 'C', 1)
     pdf.ln()
     pdf.set_font('Arial', '', 8)
-    for metric_name, row in stats.iterrows():
-        pdf.cell(stat_cols[0], 6, metric_name, 1, 0, 'L')
-        pdf.cell(stat_cols[1], 6, f"{row['mean']:,.2f}", 1, 0, 'R')
-        pdf.cell(stat_cols[2], 6, f"{row['std']:,.2f}", 1, 0, 'R')
-        pdf.cell(stat_cols[3], 6, f"{row['min']:,.2f}", 1, 0, 'R')
-        pdf.cell(stat_cols[4], 6, f"{row['max']:,.2f}", 1, 1, 'R')
+    for i, col in enumerate(stats.columns):
+        pdf.cell(stat_cols[0], 6, col, 1, 0, 'L')
+        pdf.cell(stat_cols[1], 6, f"{stats.loc['mean', col]:,.2f}", 1, 0, 'R')
+        pdf.cell(stat_cols[2], 6, f"{stats.loc['std', col]:,.2f}", 1, 0, 'R')
+        pdf.cell(stat_cols[3], 6, f"{stats.loc['min', col]:,.2f}", 1, 0, 'R')
+        pdf.cell(stat_cols[4], 6, f"{stats.loc['max', col]:,.2f}", 1, 1, 'R')
 
     pdf_output = pdf.output()
     if isinstance(pdf_output, (bytes, bytearray)):
@@ -570,20 +570,21 @@ def generate_docx_report(df_filtered, kpis, insights):
 
     # XI. Appendix - Descriptive Statistics
     document.add_heading('XI. Appendix - Descriptive Statistics', level=1)
-    stats = df_filtered[['Actual_Production_Units', 'Planned_Production_Units', 'Downtime_Minutes', 'Waste_Weight_kg']].describe().round(2)
-    table_stats = document.add_table(stats.shape[0] + 1, 5)
+    stats = df_filtered[['Actual_Production_Units', 'Planned_Production_Units', 'Downtime_Minutes', 'Waste_Weight_kg']].describe()
+    stats = stats.loc[['mean', 'std', 'min', 'max']].round(2)
+    table_stats = document.add_table(stats.shape[1] + 1, 5)
     table_stats.style = 'Light Grid'
     table_stats.cell(0, 0).text = 'Metric'
     table_stats.cell(0, 1).text = 'Mean'
     table_stats.cell(0, 2).text = 'Std'
     table_stats.cell(0, 3).text = 'Min'
     table_stats.cell(0, 4).text = 'Max'
-    for i, (metric_name, row) in enumerate(stats.iterrows()):
-        table_stats.cell(i + 1, 0).text = metric_name
-        table_stats.cell(i + 1, 1).text = f"{row['mean']:,.2f}"
-        table_stats.cell(i + 1, 2).text = f"{row['std']:,.2f}"
-        table_stats.cell(i + 1, 3).text = f"{row['min']:,.2f}"
-        table_stats.cell(i + 1, 4).text = f"{row['max']:,.2f}"
+    for i, col in enumerate(stats.columns):
+        table_stats.cell(i + 1, 0).text = col
+        table_stats.cell(i + 1, 1).text = f"{stats.loc['mean', col]:,.2f}"
+        table_stats.cell(i + 1, 2).text = f"{stats.loc['std', col]:,.2f}"
+        table_stats.cell(i + 1, 3).text = f"{stats.loc['min', col]:,.2f}"
+        table_stats.cell(i + 1, 4).text = f"{stats.loc['max', col]:,.2f}"
 
     # Save to a BytesIO object
     buffer = io.BytesIO()
