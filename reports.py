@@ -187,8 +187,11 @@ def generate_pdf_report(df_filtered, kpis, insights):
     )
 
     # KPIs
+    pdf.ln(3)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 14)
     pdf.cell(0, 10, 'II. Key Performance Indicators', 0, 1, 'L')
+    pdf.set_x(10)
     pdf.set_font('Arial', '', 10)
     
     col_width = pdf.w / 3.5
@@ -223,8 +226,11 @@ def generate_pdf_report(df_filtered, kpis, insights):
 
     # Tables - Top 5 Downtime Reasons
     pdf.add_page()
+    pdf.ln(5)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 14)
     pdf.cell(0, 10, 'III. Top 5 Downtime Reasons', 0, 1, 'L')
+    pdf.set_x(10)
     
     df_top_dt = downtime.head(5)
     
@@ -242,8 +248,10 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(col_widths[1], 6, f"{row['Downtime_Minutes']:,.0f}", 1, 1, 'R')
 
     pdf.ln(6)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'IV. Daily Production Trend (Last 10 Days)', 0, 1, 'L')
+    pdf.set_x(10)
     pdf.set_font('Arial', '', 9)
     daily_recent = daily.sort_values('Date').tail(10)
     pdf.set_fill_color(230, 230, 230)
@@ -261,6 +269,7 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(trend_cols[3], 6, f"{row['Efficiency']:.2%}", 1, 1, 'R')
 
     pdf.ln(6)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'V. Production Peaks (ASCII Visualization)', 0, 1, 'L')
     top_days = daily.sort_values('Actual_Production_Units', ascending=False).head(6)
@@ -270,10 +279,12 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(0, 5, f"{label.strftime('%Y-%m-%d')}: {value:,.0f} | {bar}", 0, 1, 'L')
 
     pdf.add_page()
+    pdf.ln(3)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 14)
     pdf.cell(0, 10, 'VI. Product Mix & Performance', 0, 1, 'L')
-    pdf.set_font('Arial', '', 10)
-    top_products = product.sort_values('Actual_Production_Units', ascending=False).head(8)
+    pdf.set_x(10)
+    top_products = product.sort_values('Actual_Production_Units', ascending=False).head(8).reset_index(drop=True)
     pdf.set_fill_color(220, 220, 220)
     pdf.set_font('Arial', 'B', 9)
     prod_cols = [pdf.w * 0.3, pdf.w * 0.2, pdf.w * 0.2, pdf.w * 0.15]
@@ -289,8 +300,10 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(prod_cols[3], 6, f"{row['Share']:.1%}", 1, 1, 'R')
 
     pdf.ln(6)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'VII. Shift Performance', 0, 1, 'L')
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 9)
     shift_cols = [pdf.w * 0.2, pdf.w * 0.2, pdf.w * 0.2, pdf.w * 0.2]
     pdf.set_fill_color(220, 220, 220)
@@ -306,9 +319,11 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(shift_cols[3], 6, f"{row['Downtime_per_Unit']:.3f}", 1, 1, 'R')
 
     pdf.ln(6)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'VIII. Operator Performance (Top 6)', 0, 1, 'L')
-    top_ops = operator.sort_values('Actual_Production_Units', ascending=False).head(6)
+    pdf.set_x(10)
+    top_ops = operator.sort_values('Actual_Production_Units', ascending=False).head(6).reset_index(drop=True)
     pdf.set_fill_color(220, 220, 220)
     pdf.set_font('Arial', 'B', 9)
     op_cols = [pdf.w * 0.3, pdf.w * 0.2, pdf.w * 0.2, pdf.w * 0.2]
@@ -326,7 +341,7 @@ def generate_pdf_report(df_filtered, kpis, insights):
     pdf.add_page()
     pdf.set_font('Arial', 'B', 14)
     pdf.cell(0, 10, 'IX. Quality & Waste', 0, 1, 'L')
-    waste_by_product = product.sort_values('Waste_Rate', ascending=False).head(6)
+    waste_by_product = product.sort_values('Waste_Rate', ascending=False).head(6).reset_index(drop=True)
     pdf.set_font('Arial', 'B', 9)
     pdf.set_fill_color(220, 220, 220)
     waste_cols = [pdf.w * 0.3, pdf.w * 0.2, pdf.w * 0.2, pdf.w * 0.2]
@@ -342,9 +357,11 @@ def generate_pdf_report(df_filtered, kpis, insights):
         yield_rate = 1 - row['Waste_Rate']
         pdf.cell(waste_cols[3], 6, f"{yield_rate:.2%}", 1, 1, 'R')
 
-    pdf.ln(6)
+    pdf.ln(3)
+    pdf.set_x(10)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'X. Recommendations & Actions', 0, 1, 'L')
+    pdf.set_x(10)
     pdf.set_font('Arial', '', 9)
     recommendations = []
     if metrics['efficiency'] < 0.95:
@@ -364,18 +381,22 @@ def generate_pdf_report(df_filtered, kpis, insights):
     pdf.ln(6)
     pdf.set_font('Arial', 'B', 12)
     pdf.cell(0, 8, 'XI. Appendix - Descriptive Statistics', 0, 1, 'L')
+    pdf.ln(2)
     stats = df_filtered[['Actual_Production_Units', 'Planned_Production_Units', 'Downtime_Minutes', 'Waste_Weight_kg']].describe()
     stats = stats.loc[['mean', 'std', 'min', 'max']].round(2)
     pdf.set_font('Arial', 'B', 8)
     pdf.set_fill_color(220, 220, 220)
-    stat_cols = [pdf.w * 0.2] * 5
+    # Adjust column widths: metric name needs more space
+    stat_cols = [pdf.w * 0.35, pdf.w * 0.16, pdf.w * 0.16, pdf.w * 0.16, pdf.w * 0.12]
     headers = ['Metric', 'Mean', 'Std', 'Min', 'Max']
     for i, header in enumerate(headers):
         pdf.cell(stat_cols[i], 6, header, 1, 0, 'C', 1)
     pdf.ln()
     pdf.set_font('Arial', '', 8)
     for i, col in enumerate(stats.columns):
-        pdf.cell(stat_cols[0], 6, col, 1, 0, 'L')
+        # Truncate long metric names for display
+        col_display = col[:25] if len(col) > 25 else col
+        pdf.cell(stat_cols[0], 6, col_display, 1, 0, 'L')
         pdf.cell(stat_cols[1], 6, f"{stats.loc['mean', col]:,.2f}", 1, 0, 'R')
         pdf.cell(stat_cols[2], 6, f"{stats.loc['std', col]:,.2f}", 1, 0, 'R')
         pdf.cell(stat_cols[3], 6, f"{stats.loc['min', col]:,.2f}", 1, 0, 'R')
@@ -471,7 +492,7 @@ def generate_docx_report(df_filtered, kpis, insights):
 
     # IV. Daily Production Trend (Last 10 Days)
     document.add_heading('IV. Daily Production Trend (Last 10 Days)', level=1)
-    daily_recent = daily.sort_values('Date').tail(10)
+    daily_recent = daily.sort_values('Date').tail(10).reset_index(drop=True)
     table_daily = document.add_table(daily_recent.shape[0] + 1, 4)
     table_daily.style = 'Light Grid'
     table_daily.cell(0, 0).text = 'Date'
@@ -494,7 +515,7 @@ def generate_docx_report(df_filtered, kpis, insights):
 
     # VI. Product Mix & Performance
     document.add_heading('VI. Product Mix & Performance', level=1)
-    top_products = product.sort_values('Actual_Production_Units', ascending=False).head(8)
+    top_products = product.sort_values('Actual_Production_Units', ascending=False).head(8).reset_index(drop=True)
     table_prod = document.add_table(top_products.shape[0] + 1, 4)
     table_prod.style = 'Light Grid'
     table_prod.cell(0, 0).text = 'Product'
@@ -523,7 +544,7 @@ def generate_docx_report(df_filtered, kpis, insights):
 
     # VIII. Operator Performance (Top 6)
     document.add_heading('VIII. Operator Performance (Top 6)', level=1)
-    top_ops = operator.sort_values('Actual_Production_Units', ascending=False).head(6)
+    top_ops = operator.sort_values('Actual_Production_Units', ascending=False).head(6).reset_index(drop=True)
     table_ops = document.add_table(top_ops.shape[0] + 1, 4)
     table_ops.style = 'Light Grid'
     table_ops.cell(0, 0).text = 'Operator'
@@ -538,7 +559,7 @@ def generate_docx_report(df_filtered, kpis, insights):
 
     # IX. Quality & Waste
     document.add_heading('IX. Quality & Waste', level=1)
-    waste_by_product = product.sort_values('Waste_Rate', ascending=False).head(6)
+    waste_by_product = product.sort_values('Waste_Rate', ascending=False).head(6).reset_index(drop=True)
     table_waste = document.add_table(waste_by_product.shape[0] + 1, 4)
     table_waste.style = 'Light Grid'
     table_waste.cell(0, 0).text = 'Product'
