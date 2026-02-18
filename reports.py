@@ -87,9 +87,9 @@ def generate_pdf_report(df_filtered, kpis, insights):
         pdf.cell(col_widths[0], 6, row['Downtime_Reason'], 1, 0, 'L')
         pdf.cell(col_widths[1], 6, f"{row['Downtime_Minutes']:,.0f}", 1, 1, 'R')
 
-    pdf_output = pdf.output(dest='S')
-    if isinstance(pdf_output, bytes):
-        return pdf_output
+    pdf_output = pdf.output()
+    if isinstance(pdf_output, (bytes, bytearray)):
+        return bytes(pdf_output)
     return pdf_output.encode('latin-1')
 
 # --- DOCX Generation (using python-docx) ---
