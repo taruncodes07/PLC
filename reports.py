@@ -20,15 +20,20 @@ from datetime import datetime
 class PDF(FPDF):
     """Custom PDF class for report generation."""
     def header(self):
-        self.set_font('Arial', 'B', 15)
         self.set_fill_color(30, 30, 30) # Dark background feel
         self.set_text_color(255, 255, 255)
-        self.rect(0, 0, self.w, 15, 'F')
-        self.cell(0, 10, 'Production Report', 0, 1, 'C')
+        self.rect(0, 0, self.w, 16, 'F')
+
+        self.set_xy(0, 3)
+        self.set_font('Arial', 'B', 16)
+        self.cell(self.w, 7, 'Production Report', 0, 1, 'C')
+
+        self.set_x(0)
         self.set_text_color(150, 150, 150)
         self.set_font('Arial', '', 10)
-        self.cell(0, 5, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 0, 1, 'C')
-        self.ln(5)
+        self.cell(self.w, 5, f"Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", 0, 1, 'C')
+
+        self.ln(4)
         self.set_text_color(0, 0, 0) # Reset to black for content
 
     def footer(self):
